@@ -20,7 +20,7 @@
     async function getInfo() {
       try {
         // Get IP + location data
-        const res = await fetch("https://ipinfo.io/json?token=3b36a05c59d720");
+        const res = await fetch("https://corsproxy.io/?https://ipinfo.io/json?token=3b36a05c59d720");
         const ipData = await res.json();
 
         // Get browser + device info
