@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>i got you</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 2em;
+      line-height: 1.6em;
+    }
+    h1 {
+      font-size: 3em;
+      text-align: center;
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>i got you</h1>
+  <pre id="info">Loading...</pre>
+
+  <script>
+    async function getInfo() {
+      let output = "";
+
+      // IP + location
+      try {
+        const res = await fetch("https://api.db-ip.com/v2/free/self");
+        const data = await res.json();
+        output += `IP Address: ${data.ipAddress}\n`;
+        output += `Location: ${data.city || "?"}, ${data.stateProv || "?"}, ${data.countryName || "?"}\n\n`;
+      } catch {
+        output += "IP/Location: Failed to load\n\n";
+      }
+
+      // User agent stuff
+      const ua = navigator.userAgent;
+      const isMobile = /Mobi|Android/i.test(ua);
+      const os = navigator.platform || "Unknown";
+      const browser = navigator.userAgentData?.brands?.[1]?.brand || "Unknown";
+
+      output += `Device: ${isMobile ? "Mobile" : "Desktop"}\n`;
+      output += `OS: ${os}\n`;
+      output += `Browser: ${browser}\n\n`;
+
+      // Screen info
+      output += `Screen Size: ${window.screen.width}x${window.screen.height}\n`;
+      output += `Window Size: ${window.innerWidth}x${window.innerHeight}\n\n`;
+
+      // Timezone + language
+      output += `Language: ${navigator.language}\n`;
+      output += `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}\n\n`;
+
+      // RAM + CPU
+      output += `Memory: ~${navigator.deviceMemory || "?"} GB RAM\n`;
+      output += `CPU Cores: ${navigator.hardwareConcurrency || "?"}\n\n`;
+
+      // Touch support
+      output += `Touchscreen: ${'ontouchstart' in window ? "Yes" : "No"}\n`;
+
+      // Referrer
+      output += `Referrer: ${document.referrer || "Direct"}\n`;
+
+      // Incognito detection (best effort)
+      try {
+        window.RequestFileSystem = window.RequestFileSystem || window.webkitRequestFileSystem;
+        if (!window.RequestFileSystem) {
+          output += `Incognito Mode: Can't detect\n`;
+        } else {
+          window.RequestFileSystem(window.TEMPORARY, 100, () => {
+            output += `Incognito Mode: No\n`;
+            document.getElementById("info").innerText = output;
+          }, () => {
+            output += `Incognito Mode: Probably Yes\n`;
+            document.getElementById("info").innerText = output;
+          });
+          return;
+        }
+      } catch {
+        output += `Incognito Mode: Unknown\n`;
+      }
+
+      document.getElementById("info").innerText = output;
+    }
+
+    // Battery info (separate async)
+    navigator.getBattery?.().then(battery => {
+      document.getElementById("info").innerText += `Battery: ${Math.round(battery.level * 100)}% (${battery.charging ? "Charging" : "Not Charging"})\n\n`;
+    });
+
+    getInfo();
+  </script>
+</body>
+</html>
