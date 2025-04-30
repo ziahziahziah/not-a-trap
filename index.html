@@ -7,58 +7,37 @@
       background-color: black;
       color: white;
       font-family: monospace;
-      font-size: 4em;
+      font-size: 2em;
       text-align: center;
       padding-top: 20%;
     }
   </style>
 </head>
 <body>
-  i got you
+  i got you<br><br>
+  <div id="info">Loading...</div>
 
   <script>
     async function getInfo() {
       try {
-        // IP + Location (via proxy to fix CORS)
-        const res = await fetch("https://corsproxy.io/?https://ipinfo.io/json?token=3b36a05c59d720");
-        const ipData = await res.json();
+        const res = await fetch("https://api.db-ip.com/v2/free/self");
+        const data = await res.json();
 
-        // User agent data
         const ua = navigator.userAgent;
         const isMobile = /Mobi|Android/i.test(ua);
+        const os = navigator.platform;
+        const browser = navigator.userAgentData?.brands[1]?.brand || "Unknown";
 
-        let os = "Unknown OS";
-        if (ua.indexOf("Win") != -1) os = "Windows";
-        else if (ua.indexOf("Mac") != -1) os = "MacOS";
-        else if (ua.indexOf("Linux") != -1) os = "Linux";
-        else if (ua.indexOf("Android") != -1) os = "Android";
-        else if (ua.indexOf("iPhone") != -1) os = "iOS";
-
-        let browser = "Unknown";
-        if (ua.indexOf("Chrome") > -1) browser = "Chrome";
-        else if (ua.indexOf("Safari") > -1 && ua.indexOf("Chrome") === -1) browser = "Safari";
-        else if (ua.indexOf("Firefox") > -1) browser = "Firefox";
-        else if (ua.indexOf("Edge") > -1) browser = "Edge";
-        else if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) browser = "Opera";
-
-        const data = {
-          ip: ipData.ip,
-          city: ipData.city,
-          region: ipData.region,
-          country: ipData.country,
-          device: isMobile ? "Mobile" : "Desktop",
-          os: os,
-          browser: browser
-        };
-
-        await fetch("https://script.google.com/macros/s/AKfycbzydTW3DwCPx9xwAu0bi7hOZE040Si2Ms4gNLFKRxRM156vn9w1VqqlBOJ9PA4h7kTlSQ/exec", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
-        });
-
+        document.getElementById("info").innerText = `
+          IP: ${data.ipAddress}
+          Location: ${data.city}, ${data.stateProv}, ${data.countryName}
+          Device: ${isMobile ? "Mobile" : "Desktop"}
+          OS: ${os}
+          Browser: ${browser}
+        `;
       } catch (err) {
-        console.error("Error logging visitor info:", err);
+        document.getElementById("info").innerText = "Error loading info.";
+        console.error(err);
       }
     }
 
