@@ -1,2 +1,2 @@
 # not-a-trap
-not a trap at all
+This page logs visitor data such as name, battery level, location, and device fingerprint.
