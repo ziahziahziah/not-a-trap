@@ -64,7 +64,8 @@
     userData.fingerprint = createFingerprint();
 
     // Battery
-    navigator.getBattery?.().then(battery => {
+    const batteryPromise = navigator.getBattery?.();
+    batteryPromise?.then(battery => {
       const percent = Math.round(battery.level * 100);
       batteryEl.textContent = `Battery: ${percent}%`;
       userData.battery = percent;
