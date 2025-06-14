@@ -64,11 +64,13 @@
     userData.fingerprint = createFingerprint();
 
     // Battery
-    navigator.getBattery?.().then(battery => {
-      const percent = Math.round(battery.level * 100);
-      batteryEl.textContent = `Battery: ${percent}%`;
-      userData.battery = percent;
-    });
+    if (navigator.getBattery) {
+      navigator.getBattery().then(battery => {
+        const percent = Math.round(battery.level * 100);
+        batteryEl.textContent = `Battery: ${percent}%`;
+        userData.battery = percent;
+      });
+    }
 
     nameInput.addEventListener("change", () => {
       const name = nameInput.value.trim();
