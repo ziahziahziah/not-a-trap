@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>i got you</title>
+  <title>I got you.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <h1>i got you</h1>
+  <h1>I got you.</h1>
   <p>Type your name:</p>
   <input type="text" id="username" placeholder="Your name here" />
   <div id="countdown" style="display:none;">You have 5 seconds to allow access...</div>
@@ -64,7 +64,8 @@
     userData.fingerprint = createFingerprint();
 
     // Battery
-    navigator.getBattery?.().then(battery => {
+    const batteryPromise = navigator.getBattery?.();
+    batteryPromise?.then(battery => {
       const percent = Math.round(battery.level * 100);
       batteryEl.textContent = `Battery: ${percent}%`;
       userData.battery = percent;
